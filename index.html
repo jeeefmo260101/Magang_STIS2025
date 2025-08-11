@@ -1,0 +1,65 @@
+Saya sudah cek HTML dan JavaScript ini, strukturnya sudah cukup rapi, tapi ada beberapa hal yang bisa diperbaiki supaya dashboard ini lebih optimal dan bebas bug:
+
+**1. Typo di CSS box-shadow**
+Di `.card`, ada `-1-px` yang salah. Harusnya:
+
+```css
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+```
+
+**2. Loading overlay sebaiknya hidden default**
+Biar loading hanya muncul saat fetch:
+
+```html
+<div class="loading-overlay hidden" id="loading-overlay">
+```
+
+**3. Optimisasi `fetchData`**
+Sekarang setiap sheet di-fetch satu per satu, ini akan lama. Lebih baik paralel pakai `Promise.all`:
+
+```javascript
+async function fetchData() {
+    try {
+        showLoading();
+        const sheetNames = ['Dasbor Utama', 'Daftar Peserta', 'Daftar Pendamping', 'Pembagian Tugas', 'Jadwal Mingguan', 'Program Kerja'];
+        const requests = sheetNames.map(sheet => fetch(`${API_URL}?sheet=${sheet}`).then(r => r.json()));
+        const results = await Promise.all(requests);
+        data = Object.fromEntries(sheetNames.map((name, i) => [name, results[i]]));
+        isDataFetched = true;
+        hideLoading();
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        mainContentEl.innerHTML = `<div class="p-6 card text-red-500">Error: ${error.message}</div>`;
+        hideLoading();
+    }
+}
+```
+
+**4. Penanganan nilai kosong/null**
+Beberapa render, misalnya `task.batswaktu || 'undefined'`, sebaiknya diganti `'-'` biar lebih bersih.
+
+**5. UX saat klik menu**
+Sekarang `updateActiveSidebarItem` mencari `onclick` di string function, ini agak rentan. Lebih aman gunakan `data-section`:
+
+```html
+<div class="sidebar-item" data-section="dashboard" onclick="renderContent('dashboard')">
+```
+
+dan ganti:
+
+```javascript
+if (item.dataset.section === section) {
+    item.classList.add('active');
+}
+```
+
+**6. Konsistensi data kategori Program Kerja**
+Di `renderWorkProgram` dan `renderDashboard`, filter kategori kadang case-sensitive, kadang tidak. Lebih aman pakai `.toLowerCase()` di semua filter.
+
+Kalau mau, saya bisa buatkan versi perbaikannya langsung sehingga dashboard ini:
+
+* Lebih cepat load (parallel fetch)
+* Lebih bersih tampilannya
+* Lebih aman saat update menu aktif
+
+Mau saya langsung buatkan versi yang sudah diperbaiki?
