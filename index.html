@@ -1,65 +1,230 @@
-Saya sudah cek HTML dan JavaScript ini, strukturnya sudah cukup rapi, tapi ada beberapa hal yang bisa diperbaiki supaya dashboard ini lebih optimal dan bebas bug:
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Magang STIS 2025 BPS Provinsi Sumatera Utara</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background-color: #1f2937;
+            color: #d1d5db;
+        }
+        .sidebar-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            background-color: #374151;
+            color: #ffffff;
+            border-left: 4px solid #3b82f6;
+        }
+        .sidebar-item.active {
+            font-weight: bold;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem;
+            background-color: #f9fafb;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.75rem;
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #e5e7eb;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
 
-**1. Typo di CSS box-shadow**
-Di `.card`, ada `-1-px` yang salah. Harusnya:
+    <!-- Sidebar -->
+    <nav class="sidebar flex flex-col h-screen sticky top-0 overflow-y-auto">
+        <div class="p-6 border-b border-gray-700">
+            <h1 class="text-xl font-bold text-white">Dashboard Magang BPS</h1>
+            <p class="text-sm text-gray-400">STIS Jakarta</p>
+        </div>
+        <div class="flex-grow py-4">
+            <div class="sidebar-item active flex items-center space-x-3" data-section="dashboard" onclick="renderContent('dashboard')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-home w-5 h-5"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Dasbor Utama</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3" data-section="tasks" onclick="renderContent('tasks')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle w-5 h-5"><path d="M22 11.08V12a10 10 0 1 1-5.93-8.5"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <span>Pembagian Tugas</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3" data-section="schedule" onclick="renderContent('schedule')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar w-5 h-5"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+                <span>Jadwal Mingguan</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3" data-section="mentors" onclick="renderContent('mentors')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users w-5 h-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Daftar Pendamping</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3" data-section="participants" onclick="renderContent('participants')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user w-5 h-5"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Daftar Peserta</span>
+            </div>
+            <div class="sidebar-item flex items-center space-x-3" data-section="work-program" onclick="renderContent('work-program')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase w-5 h-5"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <span>Program Kerja</span>
+            </div>
+        </div>
+        <div class="p-6 border-t border-gray-700">
+            <p class="text-xs text-center text-gray-500">© 2025 BPS & STIS</p>
+        </div>
+    </nav>
 
-```css
-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-```
+    <!-- Main Content -->
+    <div id="main-content" class="main-content relative">
+        <div class="loading-overlay hidden" id="loading-overlay">
+            <div class="spinner"></div>
+        </div>
+    </div>
 
-**2. Loading overlay sebaiknya hidden default**
-Biar loading hanya muncul saat fetch:
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbyHdjynNfbWrTFMWLYs9lv7cXYKuUrkYKdJ6v12y8Rj5YTROakKT51P9pP8LW7N64kmlA/exec";
+        let data = {};
+        let isDataFetched = false;
+        const mainContentEl = document.getElementById('main-content');
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+        const loadingOverlay = document.getElementById('loading-overlay');
 
-```html
-<div class="loading-overlay hidden" id="loading-overlay">
-```
+        function showLoading() { loadingOverlay.classList.remove('hidden'); }
+        function hideLoading() { loadingOverlay.classList.add('hidden'); }
 
-**3. Optimisasi `fetchData`**
-Sekarang setiap sheet di-fetch satu per satu, ini akan lama. Lebih baik paralel pakai `Promise.all`:
+        async function fetchData() {
+            try {
+                showLoading();
+                const sheetNames = ['Dasbor Utama', 'Daftar Peserta', 'Daftar Pendamping', 'Pembagian Tugas', 'Jadwal Mingguan', 'Program Kerja'];
+                const requests = sheetNames.map(sheet => fetch(`${API_URL}?sheet=${sheet}`).then(r => r.json()));
+                const results = await Promise.all(requests);
+                data = Object.fromEntries(sheetNames.map((name, i) => [name, results[i]]));
+                isDataFetched = true;
+                hideLoading();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                mainContentEl.innerHTML = `<div class="p-6 card text-red-500">Error: ${error.message}</div>`;
+                hideLoading();
+            }
+        }
 
-```javascript
-async function fetchData() {
-    try {
-        showLoading();
-        const sheetNames = ['Dasbor Utama', 'Daftar Peserta', 'Daftar Pendamping', 'Pembagian Tugas', 'Jadwal Mingguan', 'Program Kerja'];
-        const requests = sheetNames.map(sheet => fetch(`${API_URL}?sheet=${sheet}`).then(r => r.json()));
-        const results = await Promise.all(requests);
-        data = Object.fromEntries(sheetNames.map((name, i) => [name, results[i]]));
-        isDataFetched = true;
-        hideLoading();
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        mainContentEl.innerHTML = `<div class="p-6 card text-red-500">Error: ${error.message}</div>`;
-        hideLoading();
-    }
-}
-```
+        function updateActiveSidebarItem(section) {
+            sidebarItems.forEach(item => {
+                item.classList.toggle('active', item.dataset.section === section);
+            });
+        }
 
-**4. Penanganan nilai kosong/null**
-Beberapa render, misalnya `task.batswaktu || 'undefined'`, sebaiknya diganti `'-'` biar lebih bersih.
+        async function renderContent(section) {
+            showLoading();
+            if (!isDataFetched) await fetchData();
+            setTimeout(() => {
+                let html = '';
+                switch (section) {
+                    case 'dashboard': html = renderDashboard(); break;
+                    case 'tasks': html = renderTasks(); break;
+                    case 'schedule': html = renderSchedule(); break;
+                    case 'mentors': html = renderMentors(); break;
+                    case 'participants': html = renderParticipants(); break;
+                    case 'work-program': html = renderWorkProgram(); break;
+                    default: html = '<h2 class="text-2xl font-semibold text-gray-800">Halaman Tidak Ditemukan</h2>';
+                }
+                mainContentEl.innerHTML = html;
+                hideLoading();
+                updateActiveSidebarItem(section);
+            }, 300);
+        }
 
-**5. UX saat klik menu**
-Sekarang `updateActiveSidebarItem` mencari `onclick` di string function, ini agak rentan. Lebih aman gunakan `data-section`:
+        function safeVal(val) { return val || '-'; }
+        function renderDashboard() {
+            const summary = data['Dasbor Utama']?.[0] || {};
+            const totalParticipants = safeVal(summary.totalpesertamagang);
+            const completedTasks = safeVal(summary.tugasselesai);
+            const ongoingTasks = safeVal(summary.tugasberjalan);
+            const totalMentors = safeVal(summary.jumlahpendamping);
+            const workProgram = Array.isArray(data['Program Kerja']) ? data['Program Kerja'] : [];
+            const komputasi = workProgram.filter(i => i.kategori?.toLowerCase() === 'komputasi');
 
-```html
-<div class="sidebar-item" data-section="dashboard" onclick="renderContent('dashboard')">
-```
+            return `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="card p-6"><h3 class="text-md text-gray-500">Total Peserta Magang</h3><p class="text-4xl font-bold">${totalParticipants}</p></div>
+                    <div class="card p-6"><h3 class="text-md text-gray-500">Tugas Selesai</h3><p class="text-4xl font-bold text-green-600">${completedTasks}</p></div>
+                    <div class="card p-6"><h3 class="text-md text-gray-500">Tugas Berjalan</h3><p class="text-4xl font-bold text-yellow-600">${ongoingTasks}</p></div>
+                    <div class="card p-6"><h3 class="text-md text-gray-500">Jumlah Pendamping</h3><p class="text-4xl font-bold">${totalMentors}</p></div>
+                </div>
+                <div class="card p-6 mb-8"><h3 class="text-xl font-bold">Jurusan Komputasi Statistik</h3><ul class="list-disc pl-5">${komputasi.map(i => `<li>${i.deskripsi}</li>`).join('')}</ul></div>
+            `;
+        }
 
-dan ganti:
+        function renderTasks() {
+            const tasks = Array.isArray(data['Pembagian Tugas']) ? data['Pembagian Tugas'] : [];
+            return `
+                <h2 class="text-2xl font-semibold mb-6">Pembagian Tugas</h2>
+                <div class="card p-6 table-container">
+                    <table class="min-w-full"><thead><tr><th>Tugas</th><th>Ditugaskan</th><th>Status</th><th>Batas Waktu</th></tr></thead>
+                        <tbody>${tasks.map(t => `<tr><td>${safeVal(t.namatugas)}</td><td>${safeVal(t.ditugaskankepada)}</td><td>${safeVal(t.status)}</td><td>${safeVal(t.batswaktu)}</td></tr>`).join('')}</tbody>
+                    </table>
+                </div>`;
+        }
 
-```javascript
-if (item.dataset.section === section) {
-    item.classList.add('active');
-}
-```
+        function renderSchedule() {
+            const schedule = Array.isArray(data['Jadwal Mingguan']) ? data['Jadwal Mingguan'] : [];
+            return `<h2 class="text-2xl font-semibold mb-6">Jadwal Mingguan</h2><div class="card p-6"><table><tbody>${schedule.map(s => `<tr><td>${safeVal(s.hari)}</td><td>${safeVal(s.kegiatan)}</td><td>${safeVal(s.peserta)}</td></tr>`).join('')}</tbody></table></div>`;
+        }
 
-**6. Konsistensi data kategori Program Kerja**
-Di `renderWorkProgram` dan `renderDashboard`, filter kategori kadang case-sensitive, kadang tidak. Lebih aman pakai `.toLowerCase()` di semua filter.
+        function renderMentors() {
+            const mentors = Array.isArray(data['Daftar Pendamping']) ? data['Daftar Pendamping'] : [];
+            return `<h2 class="text-2xl font-semibold mb-6">Daftar Pendamping</h2><div class="grid gap-6">${mentors.map(m => `<div class="card p-6"><h3>${safeVal(m.nama)}</h3><p>${safeVal(m.divisi)}</p><p>${safeVal(m.keahlian)}</p></div>`).join('')}</div>`;
+        }
 
-Kalau mau, saya bisa buatkan versi perbaikannya langsung sehingga dashboard ini:
+        function renderParticipants() {
+            const participants = Array.isArray(data['Daftar Peserta']) ? data['Daftar Peserta'] : [];
+            return `<h2 class="text-2xl font-semibold mb-6">Daftar Peserta</h2><div class="card p-6"><table><tbody>${participants.map(p => `<tr><td>${safeVal(p.nama)}</td><td>${safeVal(p.nim)}</td><td>${safeVal(p.jurusan)}</td><td>${safeVal(p.pendamping)}</td></tr>`).join('')}</tbody></table></div>`;
+        }
 
-* Lebih cepat load (parallel fetch)
-* Lebih bersih tampilannya
-* Lebih aman saat update menu aktif
+        function renderWorkProgram() {
+            const wp = Array.isArray(data['Program Kerja']) ? data['Program Kerja'] : [];
+            const komputasi = wp.filter(i => i.kategori?.toLowerCase() === 'komputasi');
+            const lainnya = wp.filter(i => i.kategori?.toLowerCase() === 'lainnya');
+            const pengayaan = wp.filter(i => i.kategori?.toLowerCase() === 'pengayaan');
+            return `<h2 class="text-2xl font-semibold mb-6">Program Kerja</h2><div class="card p-6"><ul>${komputasi.concat(lainnya, pengayaan).map(i => `<li>${i.deskripsi}</li>`).join('')}</ul></div>`;
+        }
 
-Mau saya langsung buatkan versi yang sudah diperbaiki?
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData().then(() => renderContent('dashboard'));
+        });
+    </script>
+</body>
+</html>
